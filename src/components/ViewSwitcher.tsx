@@ -62,10 +62,8 @@ export function ViewSwitcher({ activeView, onViewChange }: ViewSwitcherProps) {
 
 		updateOrientation();
 		desktopTablist.addEventListener("change", updateOrientation);
-		window.addEventListener("resize", updateOrientation);
 		return () => {
 			desktopTablist.removeEventListener("change", updateOrientation);
-			window.removeEventListener("resize", updateOrientation);
 		};
 	}, []);
 

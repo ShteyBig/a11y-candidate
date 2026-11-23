@@ -1,6 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { App } from "./App";
 
@@ -163,6 +163,15 @@ describe("Championship Day", () => {
 	it("uses vertical orientation and Up/Down navigation when tabs are stacked on mobile", async () => {
 		const user = userEvent.setup();
 		const originalWidth = window.innerWidth;
+		const mediaQueryLists: MediaQueryList[] = [];
+		const originalMatchMedia = window.matchMedia.bind(window);
+		const matchMediaSpy = vi
+			.spyOn(window, "matchMedia")
+			.mockImplementation((query) => {
+				const mediaQueryList = originalMatchMedia(query);
+				mediaQueryLists.push(mediaQueryList);
+				return mediaQueryList;
+			});
 		window.innerWidth = 375;
 
 		try {
@@ -188,6 +197,9 @@ describe("Championship Day", () => {
 			act(() => {
 				window.innerWidth = originalWidth;
 				window.dispatchEvent(new Event("resize"));
+				for (const mediaQueryList of mediaQueryLists) {
+					mediaQueryList.dispatchEvent(new Event("change"));
+				}
 			});
 
 			expect(tablist).toHaveAttribute("aria-orientation", "horizontal");
@@ -197,7 +209,11 @@ describe("Championship Day", () => {
 			act(() => {
 				window.innerWidth = originalWidth;
 				window.dispatchEvent(new Event("resize"));
+				for (const mediaQueryList of mediaQueryLists) {
+					mediaQueryList.dispatchEvent(new Event("change"));
+				}
 			});
+			matchMediaSpy.mockRestore();
 		}
 	});
 
